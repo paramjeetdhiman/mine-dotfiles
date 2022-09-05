@@ -1,0 +1,206 @@
+""""""""""""""""""""""""""""""""""""""""""""""""
+" General Settings
+""""""""""""""""""""""""""""""""""""""""""""""""
+set number
+set mouse=a
+set hlsearch
+set smartindent
+set showmatch
+set wrap
+set matchtime=3
+set autoindent
+set shiftwidth=2
+set expandtab
+set tabstop=4
+set laststatus=2
+syntax enable
+set noshowmode  " to get rid of thing like --INSERT--
+set noshowcmd  " to get rid of display of last command
+set shortmess+=F  " to get rid of the file name displayed in the command line bar:
+set encoding=utf-8
+set scrolloff=5
+set list listchars=tab:»·,trail:·,nbsp:·
+set background=dark
+let g:one_allow_italics = 1
+hi Comment cterm=italic
+
+
+" Use this config if you don't want swapfiles and backups, at all
+set nobackup
+set noswapfile
+
+filetype indent on
+
+
+" Sidebar Line Numbers configs
+highlight LineNr term=bold cterm=NONE ctermfg=DarkGrey ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
+
+"Enables cursor line position tracking:
+set cursorline
+highlight clear cursorline
+
+" Removes the underline causes by enabling cursorline:
+highlight clear cursorlineNR
+
+" Sets the line numbering to red background:
+highlight CursorLineNR ctermbg=black
+highlight CursorLineNR ctermfg=blue
+
+
+" These settings highlight a vertical cursor column:
+"set cursorcolumn
+"highlight CursorColumn ctermfg=White ctermbg=Yellow cterm=bold guifg=white guibg=yellow gui=bold
+"highlight CursorColumn ctermfg=Black ctermbg=Yellow cterm=bold guifg=Black guibg=yellow gui=NONE
+"
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Plugins
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+call plug#begin()
+
+Plug 'pangloss/vim-javascript'
+Plug 'leafgarland/typescript-vim'
+Plug 'maxmellon/vim-jsx-pretty'
+Plug 'prettier/vim-prettier', { 'do': 'yarn install --frozen-lockfile --production' }
+Plug 'mattn/emmet-vim'
+Plug 'tmsvg/pear-tree'
+Plug 'kien/rainbow_parentheses.vim'
+Plug 'nathanaelkane/vim-indent-guides'
+Plug 'mattn/emmet-vim'
+Plug 'terryma/vim-multiple-cursors'
+Plug 'lifepillar/vim-mucomplete'
+Plug 'ap/vim-css-color'
+Plug 'itchyny/lightline.vim'
+Plug 'sirver/ultisnips'
+Plug 'ryanoasis/vim-devicons'
+Plug 'scrooloose/nerdcommenter'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'mileszs/ack.vim'
+Plug 'voldikss/vim-floaterm'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'preservim/nerdtree'
+Plug 'rakr/vim-one'
+
+call plug#end()
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" end vim-plug
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Mappings
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+nmap <C-w> :w<CR>
+nmap <C-c> :q!<CR>
+nmap <C-d> :qa!<CR>
+nmap <C-t> :FloatermToggle<CR>
+nmap <C-f> :FZF<CR>
+
+" format lines indentations
+nmap <C-b> gg=G<CR>i
+
+nmap gf :edit<cfile><cr>
+nmap <Leader>x :!xdg-open %<cr><cr>
+
+" Use Ctrl-k Ctrl-k to open a sidebar with the list of files
+map <C-k><C-k> :NERDTreeToggle<cr>
+
+
+" floatterm Terminal
+let g:floaterm_keymap_toggle = '<F12>'
+"let g:floaterm_width = 0.9
+"let g:floaterm_height = 0.9
+
+nmap <Leader>t :FloatermNew<CR>
+nmap <Leader>tk :FloatermHide<CR>
+
+" MUcomplete
+set completeopt+=menuone
+let g:mucomplete#chains = {} " Declare empty variable to override the default
+let g:mucomplete#chains.default = ['path', 'keyn']
+let g:mucomplete#popup_direction = { 'keyn' : -1 } " Reverse completion direction
+
+
+autocmd BufNewFile,BufReadPost *.md set filetype=markdown
+autocmd BufNewFile,BufReadPost *.dockerfile set filetype=Dockerfile
+autocmd BufNewFile,BufReadPost *.jenkinsfile set filetype=groovy
+autocmd BufNewFile *.cpp 0r ~/.vim/templates/base.cpp
+
+
+
+" FZF remove files like node_modules
+command! -bang -nargs=*  All
+      \ call fzf#run(fzf#wrap({'source': 'rg --files --hidden --no-ignore-vcs --glob "!{node_modules/*,.git/*}"' }))
+
+" Use Ctrl-P to open the fuzzy file opener
+nnoremap <C-p> :All<cr>
+
+
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+let g:prettier#autoformat = 0
+autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
+
+let g:lightline = {
+      \ 'colorscheme': 'wombat',
+      \ 'active': {
+        \    'right': [ [ 'syntastic', 'lineinfo' ], ['percent'], [  'filetype' ] ]
+        \ },
+        \ 'component_function': {
+          \   'fugitive': 'MyFugitive',
+          \   'readonly': 'MyReadonly',
+          \   'modified': 'MyModified',
+          \ },
+          \ 'separator': { 'left': '', 'right': '' },
+          \ 'subseparator': { 'left': '', 'right': '' }
+          \ }
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+autocmd vimEnter *.cpp map <F8> :w <CR> :!clear ; g++ --std=c++17 %; if [ -f a.out ]; then time ./a.out; rm a.out; fi <CR>
+autocmd FileType c,cpp setlocal equalprg=clang-format
+command! -nargs=0 Prettier :call CocAction('runCommand', 'prettier.formatFile')
+
+
+"-- EXTERNAL CONFIGS --
+"source ~/.vim/config/autoclosing.vim
+packloadall
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+
+""""""SET THEMES""""""
+
+"let g:airline_theme='one'
+"colorscheme one
+
+
+"set termguicolors | "Use the right colors
+"colorscheme nightfly
+"let g:lightline = {'colorscheme': 'nightfly'}
+"let g:nightflyCursorColor = 1
+"let g:nightflyUnderlineMatchParen = 1
+"let g:moonflyIgnoreDefaultColors = 1
+
+"""""""""""""""""""""""""""""""""""""""""""
+
+"""""""""""""Vifm"""""""""""""""""""""""""" 
+
+"nmap <Leader>vv :Vifm<CR>
+"nmap <Leader>vs :VsplitVifm<CR>
+"nmap <Leader>sp :SplitVifm<CR>
+"nmap <Leader>dv :DiffVifm<CR>
+"nmap <Leader>tv :TabVifm<CR>
+""""""""""""""""""""""""""""""""""""""""""""
+"let mapleader = ","
+"nmap <leader>ne :NERDTree<cr>
+"
+
